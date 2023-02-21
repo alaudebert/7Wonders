@@ -12,3 +12,14 @@ web-build/
 
 # macOS
 .DS_Store
+
+# build
+android/app/build
+android/build
+ios/build
+# misc
+*.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
