@@ -4,25 +4,36 @@ import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 
 const Wonder = () => {
-  const [wonderName, setWonderName] = useState("");
-  const [wonderStep, setWonderStep] = useState("");
-  const [wonderBuild, setWonderBuild] = useState(false);
-  const [wonderMail, setWonderMail] = useState("");
+  const [cityId, setCityId] = useState("");
+  const [cityName, setCityName] = useState("");
+  const [wonderBuilds, setWonderBuilds] = useState({});
+  const [wonderResources, setWonderResources] = useState({});
   const [wonderResourceName, setWonderResourceName] = useState("");
 
   function readWonderData() {
-    const wonderRef = ref(db, "Wonders/");
-    onValue(wonderRef, (snapshot) => {
-      const wonders = snapshot.val();
-      const wonder = wonders[wonderName];
-      if (wonder) {
-        setWonderStep(wonder.Step);
-        setWonderBuild(wonder.Build);
-        setWonderMail(wonder.mail);
-        const wonderResourceRef = ref(db, "WonderResource/" + wonderName + "/");
+    const cityRef = ref(db, "City/");
+    onValue(cityRef, (snapshot) => {
+      const cities = snapshot.val();
+      const city = cities[cityId];
+      if (city) {
+        setCityName(city.Name);
+        const wonderRef = ref(db, "Wonders/" + cityId + "/");
+        onValue(wonderRef, (snapshot) => {
+          const builds = snapshot.val();
+          let buildObj = {};
+          for (const [buildNum, build] of Object.entries(builds)) {
+            buildObj[buildNum] = build.Build;
+          }
+          setWonderBuilds(buildObj);
+        });
+        const wonderResourceRef = ref(db, "WonderResource/" + cityId + "/");
         onValue(wonderResourceRef, (snapshot) => {
-          const resource = snapshot.val();
-          setWonderResourceName(resource);
+          const resources = snapshot.val();
+          let resourcedObj = {};
+          for (const [resourceNum, resource] of Object.entries(resources)) {
+            resourcedObj[resourceNum] = resource.Name;
+          }
+          setWonderResources(resourcedObj);
         });
       }
     });
@@ -32,16 +43,24 @@ const Wonder = () => {
     <View style={styles.container}>
       <Text>Firebase</Text>
       <TextInput
-        value={wonderName}
+        value={cityId}
         onChangeText={(name) => {
-          setWonderName(name);
+          setCityId(name);
         }}
         placeholder="Wonder Name"
         style={styles.textBox}
       />
-      <Text>Step: {wonderStep}</Text>
-      <Text>Build: {wonderBuild ? "Yes" : "No"}</Text>
-      <Text>Resource: {wonderResourceName}</Text>
+      <Text>Resource: {cityName}</Text>
+      {Object.keys(wonderBuilds).map((buildNum) => (
+        <View key={buildNum}>
+          <Text>
+            Construction de l'étape {buildNum}:{" "}
+            {wonderBuilds[buildNum] ? "Oui" : "Non"}
+          </Text>
+          <Text key={buildNum}>Resource : {wonderResources[buildNum]}</Text>
+        </View>
+      ))}
+
       <Button onPress={readWonderData} title="Submit" />
     </View>
   );

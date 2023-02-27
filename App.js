@@ -6,7 +6,7 @@ import Player from "./components/Player";
 export default App = () => {
   return (
     <View style={styles.container}>
-      <Player />
+      <Wonder />
     </View>
   );
 };
