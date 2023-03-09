@@ -1,72 +1,98 @@
 import { StyleSheet, Text, TextInput, View, Button } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 
-const Wonder = () => {
-  const [cityId, setCityId] = useState("");
-  const [cityName, setCityName] = useState("");
+const Wonders = (props) => {
   const [wonderBuilds, setWonderBuilds] = useState({});
-  const [wonderResources, setWonderResources] = useState({});
-  const [wonderResourceName, setWonderResourceName] = useState("");
+  const [wonderSaveResources, setWonderSaveResources] = useState({});
+  const [wonderCostResources, setWonderCostResources] = useState({});
+  const [cityName, setCityName] = useState("");
 
-  function readWonderData() {
-    const cityRef = ref(db, "City/");
-    onValue(cityRef, (snapshot) => {
-      const cities = snapshot.val();
-      const city = cities[cityId];
-      if (city) {
-        setCityName(city.Name);
-        const wonderRef = ref(db, "Wonders/" + cityId + "/");
-        onValue(wonderRef, (snapshot) => {
-          const builds = snapshot.val();
-          let buildObj = {};
-          for (const [buildNum, build] of Object.entries(builds)) {
-            buildObj[buildNum] = build.Build;
+  useEffect(() => {
+    if (props.city) {
+      const cityId = props.cityId;
+      setCityName(props.city.Name);
+      const wonderRef = ref(db, "Wonders/" + cityId + "/");
+      onValue(wonderRef, (snapshot) => {
+        const builds = snapshot.val();
+        let buildObj = {};
+        for (const [buildNum, build] of Object.entries(builds)) {
+          buildObj[buildNum] = build.Build;
+        }
+        setWonderBuilds(buildObj);
+      });
+      const wonderCostResourceRef = ref(
+        db,
+        "WonderResourceCost/" + cityId + "/"
+      );
+      onValue(wonderCostResourceRef, (snapshot) => {
+        const resources = snapshot.val();
+
+        let costResourcedObj = {};
+        for (const [resourceNum, resource] of Object.entries(resources)) {
+          const resourceKeys = Object.keys(resource);
+          let resourceStr = "";
+          for (const key of resourceKeys) {
+            const quantity = resource[key].Quantity;
+            if (resourceStr === "") {
+              resourceStr += `${key} (${quantity})`;
+            } else {
+              resourceStr += `, ${key} (${quantity})`;
+            }
           }
-          setWonderBuilds(buildObj);
-        });
-        const wonderResourceRef = ref(db, "WonderResource/" + cityId + "/");
-        onValue(wonderResourceRef, (snapshot) => {
-          const resources = snapshot.val();
-          let resourcedObj = {};
-          for (const [resourceNum, resource] of Object.entries(resources)) {
-            resourcedObj[resourceNum] = resource.Name;
+          costResourcedObj[resourceNum] = resourceStr;
+        }
+        setWonderCostResources(costResourcedObj);
+      });
+
+      const wonderSaveResourceRef = ref(
+        db,
+        "WonderResourceSave/" + cityId + "/"
+      );
+      onValue(wonderSaveResourceRef, (snapshot) => {
+        const resources = snapshot.val();
+
+        let saveResourcedObj = {};
+        for (const [resourceNum, resource] of Object.entries(resources)) {
+          const resourceKeys = Object.keys(resource);
+          let resourceStr = "";
+          for (const key of resourceKeys) {
+            const quantity = resource[key].Quantity;
+            if (resourceStr === "") {
+              resourceStr += `${key} (${quantity})`;
+            } else {
+              resourceStr += `, ${key} (${quantity})`;
+            }
           }
-          setWonderResources(resourcedObj);
-        });
-      }
-    });
-  }
+          saveResourcedObj[resourceNum] = resourceStr;
+        }
+        setWonderSaveResources(saveResourcedObj);
+      });
+    }
+  }, [props.cityId]);
 
   return (
     <View style={styles.container}>
       <Text>Firebase</Text>
-      <TextInput
-        value={cityId}
-        onChangeText={(name) => {
-          setCityId(name);
-        }}
-        placeholder="Wonder Name"
-        style={styles.textBox}
-      />
-      <Text>Resource: {cityName}</Text>
+      <Text>Merveille : {cityName}</Text>
       {Object.keys(wonderBuilds).map((buildNum) => (
         <View key={buildNum}>
           <Text>
             Construction de l'étape {buildNum}:{" "}
             {wonderBuilds[buildNum] ? "Oui" : "Non"}
           </Text>
-          <Text key={buildNum}>Resource : {wonderResources[buildNum]}</Text>
+          <Text key={buildNum}>
+            Cout de l'étape : {wonderCostResources[buildNum]}
+            Gain de l'étape : {wonderSaveResources[buildNum]}
+          </Text>
         </View>
       ))}
-
-      <Button onPress={readWonderData} title="Submit" />
     </View>
   );
 };
 
-export default Wonder;
+export default Wonders;
 
 const styles = StyleSheet.create({
   container: {

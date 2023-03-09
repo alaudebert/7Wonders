@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, TextInput, Button } from "react-native";
+import { StyleSheet, Text, TextInput, View, Button } from "react-native";
 import { useState } from "react";
-import { ref, set, update, onValue, remove } from "firebase/database";
+import { ref, onValue, useEffect } from "firebase/database";
 import { db } from "./configuration";
 
 const Player = () => {
@@ -73,7 +73,7 @@ const Player = () => {
   function readDataResource() {}
 
   return (
-    <View style={styles.player}>
+    <View style={styles.container}>
       <TextInput
         value={username}
         onChangeText={(username) => {
@@ -95,7 +95,7 @@ const Player = () => {
 export default Player;
 
 const styles = StyleSheet.create({
-  player: {
+  container: {
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   card: {
-    alignItems: "flex-start",
+    alignItems: "left",
     justifyContent: "center",
   },
 });
