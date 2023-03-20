@@ -1,35 +1,86 @@
-import React from "react";
-import { StyleSheet, View, Text, Button } from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import Wonders from "./Wonders";
+import { wonderImage } from "./Global";
+import { cities } from "./Global.js";
 
-const RandomWonder = () => {
-  //const charArray = ["CR", "GP", "JB", "MH", "PA", "TA", "ZO"];
-  const charArray = ["CR", "PA"];
+const RandomWonder = ({ onWonderChange, onResourceChange }) => {
+  const image = require("../assets/add.png");
 
-  const [randomWonder, setRandomWonder] = React.useState(Math.floor(Math.random() * charArray.length));
+  const [disabled, setDisabled] = useState(false);
+  const [resource, setResource] = useState(null);
+  const [randomWonder, setRandomWonder] = React.useState("");
   const [city, setCity] = React.useState(null);
+  const [loadingCity, setLoadingCity] = React.useState(false);
 
   const handleGenerateRandomWonder = () => {
-    const indexRandomWonder = Math.floor(Math.random() * charArray.length);
-    setRandomWonder(charArray[indexRandomWonder]);
-    const cityRef = ref(db, `City/${charArray[indexRandomWonder]}`); // Modifier ici pour accéder à la ville aléatoire correctement
-    onValue(cityRef, (snapshot) => {
-      const cityData = snapshot.val();
-      setCity(cityData); // Mettre à jour l'état de la ville avec les données récupérées de Firebase
-    });
-    console.log(city);
+    if (!loadingCity) {
+      const indexRandomWonder = Math.floor(Math.random() * cities.length);
+      const newRandomWonder = cities[indexRandomWonder];
+      setRandomWonder(newRandomWonder);
+      cities.splice(indexRandomWonder, 1);
+    }
+  };
+
+  useEffect(() => {
+    if (randomWonder !== "") {
+      setLoadingCity(true);
+      const cityRef = ref(db, `City/${randomWonder}`);
+      onValue(cityRef, (snapshot) => {
+        const cityData = snapshot.val();
+        setCity(cityData);
+        setLoadingCity(false);
+      });
+      setDisabled(true);
+
+      //Récupération des ressources de la merveille
+      const cityResourceRef = ref(db, "CityResource/" + randomWonder + "/");
+      onValue(cityResourceRef, (snapshot) => {
+        const CityResource = snapshot.val();
+        setResource(CityResource.Resource);
+      handleResourceChange(CityResource.Resource);
+      });
+    }
+    handleWonderChange();
+  }, [randomWonder]);
+
+  const handleResourceChange = (resource) => {
+    onResourceChange(resource);
+  };
+
+  const handleWonderChange = () => {
+    onWonderChange(randomWonder);
   };
 
   return (
-    <View style={styles.displayWonder}>
-      <Text>Random Wonder: {randomWonder}</Text>
-      <Button
-        title="Generate Random Wonder"
-        onPress={handleGenerateRandomWonder}
-      />
-      <Wonders cityId={randomWonder} city={city} />
+    <View>
+      <View style={styles.wonders}>
+        <TouchableOpacity
+          onPress={handleGenerateRandomWonder}
+          disabled={disabled}
+        >
+          {!disabled ? (
+            <View style={{ flex: 1, flexDirection: "row" }}>
+              <Image source={image} style={styles.image} />
+              <Text style={{ maxWidth: "80%", position: "relative", top: 30 }}>
+                Cliquez sur + pour découvrir votre merveille !
+              </Text>
+            </View>
+          ) : (
+            <View>
+              <Image source={wonderImage[randomWonder]} style={styles.image} />
+              <Image source={wonderImage[resource]} style={styles.resource} />
+            </View>
+          )}
+        </TouchableOpacity>
+        {loadingCity ? (
+          <Text>Chargement de la merveille...</Text>
+        ) : (
+          <Wonders cityId={randomWonder} city={city} />
+        )}
+      </View>
     </View>
   );
 };
@@ -37,11 +88,27 @@ const RandomWonder = () => {
 export default RandomWonder;
 
 const styles = StyleSheet.create({
-  displayWonder: {
-    padding: 100,
+  image: {
+    width: 90,
+    height: 90,
+    borderRadius: 50,
+  },
+  load: {
+    position: "relative",
+    top: 5,
+    padding: 30,
+  },
+  wonders: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
+  },
+  resource: {
+    position: "relative",
+    top: -30,
+    left: 60,
+    width: 40,
+    height: 40,
+    backgroundColor: "white",
+    borderRadius: 10,
   },
 });

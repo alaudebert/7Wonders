@@ -1,21 +1,20 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
-import Wonder from "./components/Wonders";
-import Player from "./components/Player";
 import Game from "./components/Game";
+import Home from "./components/Home";
 import RandomWonder from "./components/displayWonders";
-import Wonders from "./components/Wonders";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 export default App = () => {
+  const Stack = createNativeStackNavigator();
   return (
-    <View style={styles.container}>
-      <RandomWonder />
-    </View>
+    //<WonderImage way="CR"/>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen options={{headerShown: false}} name="Home" component={Home} />
+        <Stack.Screen options={{headerShown: false}} name="Game" component={Game} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
