@@ -5,32 +5,40 @@ import {
   Text,
   ImageBackground,
 } from "react-native";
-import { useState } from "react";
 import { ref, update } from "firebase/database";
 import { db } from "./configuration";
 import Player from "./Player";
 
+/** Game
+ *  permet aux utilisateurs d'entrer leur nom et assigne une merveille à chaque utilisateur
+ *
+ * Game fait appel au composant Player
+ *
+ * @param {*} param0
+ * @returns
+ */
 const Game = ({ route }) => {
+  /** Le nombre de joueur dans la partie */
   const numberOfPlayers = route.params.PlayerNumber;
+  /** Le nom de la partie */
   const gameName = route.params.Name;
+  /** Le tableau de joueurs */
   const players = [];
 
+  /**
+   * createGame ajoute le nombre de joueurs dans la base de donnée
+   */
   const createGame = () => {
     if (gameName) {
       update(ref(db, "Game/" + gameName), {
         PlayerNumber: numberOfPlayers,
-      })
-        .then(() => {
-          // Data saved successfully!
-          alert("data updated!");
-        })
-        .catch((error) => {
-          // The write failed...
-          alert(error);
-        });
+      }).catch((error) => {
+        alert(error);
+      });
     }
   };
 
+  // Boucle permettant d'afficher autant de composant Player que de joueurs dans la partie
   for (let i = 1; i <= numberOfPlayers; i++) {
     players.push({ key: i.toString() });
   }
@@ -43,7 +51,10 @@ const Game = ({ route }) => {
       <Text style={styles.title}> Joueurs</Text>
       <FlatList
         data={players}
-        renderItem={({ item }) => <Player turn={item.key} game={gameName} />}
+        renderItem=
+        /** Donne l'ordre de jeu du joueur et le nom de la partie en paramètre du composant player */
+        {({ item }) => <Player turn={item.key} game={gameName} /> 
+        }
       />
       <TouchableOpacity
         style={styles.button}
@@ -72,9 +83,17 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   button: {
-    width: "100%",
-    backgroundColor: "#107657",
+    width: "90%",
+    backgroundColor: "#322202",
     borderRadius: 20,
     padding: 8,
+    alignSelf: "center",
+    margin: 8,
+  },
+  textButton: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "white",
   },
 });

@@ -6,15 +6,32 @@ import Wonders from "./Wonders";
 import { wonderImage } from "./Global";
 import { cities } from "./Global.js";
 
-const RandomWonder = ({ onWonderChange, onResourceChange }) => {
+/**
+ * Au clic randomWonder associe une merveille aléatoire à un joueur
+ * Utilise 2 fonctions de callback avec onWonderChange et onResourceChange
+ * Contient le composant Wonder qui affiche les informations de la merveille
+ * @param {*} param0 
+ * @returns 
+ */
+const RandomWonder = ({ onWonderChange, onResourceChange}) => {
   const image = require("../assets/add.png");
 
+  /** Permet de gérer l'autorisation de clic sur la génération d'une merveille */
   const [disabled, setDisabled] = useState(false);
+  /** Resource associée à la merveille */
   const [resource, setResource] = useState(null);
+  /** Id de merveille aléatoire */
   const [randomWonder, setRandomWonder] = React.useState("");
+  /** Merveille */
   const [city, setCity] = React.useState(null);
+
+  /** Permet d'attendre que la merveille soit récupérée avant de l'afficher  */
   const [loadingCity, setLoadingCity] = React.useState(false);
 
+  /**
+   * Selection d'une merveille aléatoire et 
+   * Suppression de cette merveille pour qu'elle ne tombe qu'une fois
+   */
   const handleGenerateRandomWonder = () => {
     if (!loadingCity) {
       const indexRandomWonder = Math.floor(Math.random() * cities.length);
@@ -24,6 +41,7 @@ const RandomWonder = ({ onWonderChange, onResourceChange }) => {
     }
   };
 
+  /** Récupération de la merveille et de sa merveille */
   useEffect(() => {
     if (randomWonder !== "") {
       setLoadingCity(true);
@@ -33,9 +51,10 @@ const RandomWonder = ({ onWonderChange, onResourceChange }) => {
         setCity(cityData);
         setLoadingCity(false);
       });
+      //La merveille aléatoire ne peut être chargé qu'une fois
       setDisabled(true);
 
-      //Récupération des ressources de la merveille
+      //Récupération de la ressource de la merveille
       const cityResourceRef = ref(db, "CityResource/" + randomWonder + "/");
       onValue(cityResourceRef, (snapshot) => {
         const CityResource = snapshot.val();
@@ -46,10 +65,12 @@ const RandomWonder = ({ onWonderChange, onResourceChange }) => {
     handleWonderChange();
   }, [randomWonder]);
 
+  /** Fonction de callback pour faire remonter la resource de la merveille au composant player */
   const handleResourceChange = (resource) => {
     onResourceChange(resource);
   };
 
+  /** Fonction de callback permettant de faire remonter la merveille au composant Player */
   const handleWonderChange = () => {
     onWonderChange(randomWonder);
   };

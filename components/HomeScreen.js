@@ -12,13 +12,36 @@ import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
 import { db } from "./configuration";
 
+/** Page d'accueil de l'application 
+ * 
+ * Fonctionnalitées : 
+ *  - Créer une partie avec son nom de partie et son nombre de joueur
+ * 
+ * Navigation : 
+ *  - Renvoie à la page Game.js
+ */
 const Game = (props) => {
+
+  /** @constante @type {string} Enregistre le nom de la partie  */
   const [name, setName] = useState("");
-  const [numberOfPlayers, setNumberOfPlayers] = useState("4");
+
+  /** @constante @type {number} Enregistre le nombre de joueurs (minimum 4)*/
+  const [numberOfPlayers, setNumberOfPlayers] = useState(4);
+
+  /** Gestion de la navigation 
+   * @returns Donne le nom de la partie et le nombre de joueur en paramètre de la navigation
+   */
   const goTo = () => {
-    props.navigation.push("Game", { PlayerNumber: numberOfPlayers, Name:name});
+    props.navigation.push("Game", {
+      PlayerNumber: numberOfPlayers,
+      Name: name,
+    });
   };
 
+  /**
+   * Ajoute la partie dans la base de donnée en utilisant le nom entrée
+   * @returns Appel la constante goTo qui gère la navigation
+   */
   function createData() {
     set(ref(db, "Game/" + name), {
       name: name,
@@ -34,16 +57,24 @@ const Game = (props) => {
     goTo();
   }
 
+  /** Vérifie qu'un nom de partie est entrée avant de créer la partie et passer à la suite */
+  const verification = () => {
+    if (!name) {
+      alert("Veuillez indiquer un nom de partie ! ");
+      return;
+    } else {
+      createData();
+    }
+  };
+
   return (
     <ImageBackground
       source={require("../assets/couverture.png")}
       style={styles.background}
     >
       <View style={styles.container}>
-        <Image
-          source={require(`../assets/titre.png`)}
-          style={styles.image}
-        />
+        
+        <Image source={require(`../assets/titre.png`)} style={styles.image} />
 
         <TextInput
           value={name}
@@ -53,6 +84,7 @@ const Game = (props) => {
           placeholder="Nom de la partie"
           style={styles.textBoxes}
         ></TextInput>
+
         <View style={styles.textBoxes}>
           <Picker
             selectedValue={numberOfPlayers}
@@ -65,15 +97,18 @@ const Game = (props) => {
             <Picker.Item label="7 joueurs" value="7" />
           </Picker>
         </View>
+
         <TouchableOpacity
           onPress={() => {
-            createData();
+            verification();
           }}
           style={styles.button}
         >
           <Text style={styles.buttonText}>Jouer</Text>
         </TouchableOpacity>
+
       </View>
+
     </ImageBackground>
   );
 };

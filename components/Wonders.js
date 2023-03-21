@@ -4,6 +4,11 @@ import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import { wonderImage } from "./Global";
 
+/**
+ * Permet d'afficher les informations d'une merveille donnée en paramètre
+ * @param {*} props contient la merveille à afficher
+ * @returns 
+ */
 const Wonders = (props) => {
   const [wonderBuilds, setWonderBuilds] = useState({});
   const [wonderSaveResources, setWonderSaveResources] = useState({});
@@ -12,10 +17,15 @@ const Wonders = (props) => {
   const [wonderCostQuantities, setWonderCostQuantities] = useState({});
   const [cityName, setCityName] = useState("");
 
+  /**
+   * Récupère toutes les données à afficher (Etape construite, cout, gain)
+   */
   useEffect(() => {
     if (props.city) {
       const cityId = props.cityId;
       setCityName(props.city.Name);
+
+      //Enregistre dans un objet l'état de construction des étapes de merveilles (3 étapes)
       const wonderRef = ref(db, "Wonders/" + cityId + "/");
       onValue(wonderRef, (snapshot) => {
         const builds = snapshot.val();
@@ -25,6 +35,8 @@ const Wonders = (props) => {
         }
         setWonderBuilds(buildObj);
       });
+
+      //Récupère les resources correspondantes au cout de la merveille et leur quantité
       const wonderCostResourceRef = ref(
         db,
         "WonderResourceCost/" + cityId + "/"
@@ -35,8 +47,13 @@ const Wonders = (props) => {
         let costQuantitydObj = {};
         for (const [resourceNum, resource] of Object.entries(resources)) {
           const resourceKeys = Object.keys(resource);
+
+          //Utilisation de variables intermédiaires car avec les fonctions asynchrones on à pas accès 
+          //immédiatement aux informations voulues
           let resourceStr = [];
           let quantityStr = [];
+
+          //Récupération des quantités
           for (const key of resourceKeys) {
             const quantity = resource[key].Quantity;
 
@@ -50,6 +67,7 @@ const Wonders = (props) => {
         setWonderCostQuantities(costQuantitydObj);
       });
 
+      //De même pour les resources correspondantes au gain de la merveille
       const wonderSaveResourceRef = ref(
         db,
         "WonderResourceSave/" + cityId + "/"
@@ -81,21 +99,29 @@ const Wonders = (props) => {
     <View style={styles.container}>
       {Object.keys(wonderBuilds).map((buildNum) => (
         <View style={styles.buildContainer} key={buildNum}>
+
           <Text style={styles.buildEtape}>
             <Text style={{fontWeight:'bold', fontSize:18}}>Etape {buildNum}:{" "}</Text>
             {wonderBuilds[buildNum] ? "  Construite" : "  A construire"}
           </Text>
+
           <View style={styles.etapeContainer}>
+
+            {/** Affichage des ressources pour chaque étape de construction */}
             <View key={buildNum} style={styles.etape}>
               <View style={styles.resourceContainer}>
                 {wonderCostResources[buildNum] &&
                   wonderCostQuantities[buildNum] &&
                   wonderCostResources[buildNum].map((resource, index) => (
                     <View key={index}>
+                      {/** Affichage dynamique d'image en passant par les 
+                       * variables globales contenant les chemins des images
+                       **/}
                       <Image
                         source={wonderImage[resource]}
                         style={styles.resourceImage}
                       />
+
                       <Text> x {wonderCostQuantities[buildNum][index]}</Text>
                     </View>
                   ))}

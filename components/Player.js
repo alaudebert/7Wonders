@@ -11,8 +11,13 @@ import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
 import RandomWonder from "./displayWonders";
 import { db } from "./configuration";
-import { resource } from "./displayWonders";
 
+/**
+ * Player
+ * Permet de créer un joueur avec un nom, des resources mises à 0 sauf celle de la merveille et une merveille
+ * @param {*} props contient le nom de la partie et l'ordre de jeu du joueur
+ * @returns Player contient le composant displayWonders
+ */
 const Player = (props) => {
   const [username, setName] = useState("");
   const [curentDeck, setCurentDeck] = useState("");
@@ -26,11 +31,21 @@ const Player = (props) => {
   const [city, setCity] = useState("");
   const gameName = props.game;
   const turn = props.turn;
+  const [disabled, setDisabled] = useState(false);
 
+  /**
+   * Fonction callback qui récupère la resource du composant displayWonder
+   * @param {} resource la resource renvoyé
+   */
   const handleResourceChange = (resource) => {
     setResource(resource);
   };
 
+  /**
+   * Fonction de callback qui récupère la merveille du composant displayWonder et
+   * crée l'association de la merveille et du joueur en base de donnée
+   * @param {} city la merveille renvoyée
+   */
   const handleWonderChange = (city) => {
     setCity(city);
     set(ref(db, `PlayerWonder/${username}/`), {
@@ -44,7 +59,15 @@ const Player = (props) => {
       });
   };
 
+  /**
+   * Permet de créer le joueur en base de données
+   * Permet de créer l'association entre le joueur et la partie avec le tour de jeu dans la partie
+   * Ajoute la resource de la merveille au joueur
+   */
   function createData() {
+    setDisabled(true);
+
+    //Création du joueur
     set(ref(db, "users/" + username), {
       username: username,
       cointPoint: cointPoint,
@@ -52,26 +75,24 @@ const Player = (props) => {
       armyPoint: armyPoint,
       leftTrade: leftTrade,
       rightTrade: rightTrade,
-    })
-      .then(() => {
-        alert("data updated!");
-      })
-      .catch((error) => {
-        alert(error);
-      });
+    }).catch((error) => {
+      alert(error);
+    });
 
+    // Création de l'association entre le joueur et la partie
     update(ref(db, "GamePlayer/" + gameName), {
       [username]: {
         Turn: turn,
       },
-    })
-      .then(() => {
-        alert("data updated!");
-      })
-      .catch((error) => {
-        alert(error);
-      });
+    }).catch((error) => {
+      alert(error);
+    });
 
+    /**
+     * Création des ressources associées au joueur
+     * Ajout de la ressource de la merveille au joueur
+     * @param {*} username le nom du joueur
+     */
     const savePlayerResources = (username) => {
       const resourcesRef = ref(db, "Resource/");
 
@@ -103,17 +124,17 @@ const Player = (props) => {
 
     update(ref(db, "users/" + username), {
       username: username,
-    })
-      .then(() => {
-        // Data saved successfully!
-        alert("data updated!");
-      })
-      .catch((error) => {
-        // The write failed...
-        alert(error);
-      });
+    }).catch((error) => {
+      // The write failed...
+      alert(error);
+    });
   }
 
+  /**
+   * Vérifie qu'un nom d'utilisateur est bien entrée
+   * Vérifie qu'une merveille est bien associée
+   * @returns Renvoie à la fonction createData
+   */
   const verification = () => {
     if (!username) {
       alert("Veuillez indiquer un nom d'utilisateur");
@@ -139,10 +160,10 @@ const Player = (props) => {
             required
             value={username}
             onChangeText={(username) => {
-              setName(username);
+              if (!disabled) setName(username);
             }}
             placeholder="Nom d'utilisateur"
-            style={styles.textBoxes}
+            style={disabled ? styles.frozen : styles.textBoxes}
           ></TextInput>
         </View>
         {username ? (
@@ -154,13 +175,17 @@ const Player = (props) => {
         ) : (
           <></>
         )}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={verification}
-          title="Valider"
-        >
-          <Text style={styles.textButton}>Valider</Text>
-        </TouchableOpacity>
+        {!disabled ? (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={verification}
+            title="Valider"
+          >
+            <Text style={styles.textButton}>Valider</Text>
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )}
       </View>
     </View>
   );
@@ -169,12 +194,6 @@ const Player = (props) => {
 export default Player;
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 40,
-    padding: 20,
-    fontWeight: "bold",
-    color: "#107657",
-  },
   player: {
     flex: 1,
     alignItems: "center",
@@ -190,6 +209,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 12,
     borderColor: "#c9aa79",
+    borderWidth: 1,
+    borderRadius: 20,
+  },
+  frozen: {
+    textAlign: "center",
+    fontWeight: "bold",
+    marginBottom: 20,
+    marginTop: 20,
+    width: "90%",
+    fontSize: 18,
+    padding: 12,
+    backgroundColor: "#c9aa79",
+    borderColor: "#c9aa79",
+    color: "white",
     borderWidth: 1,
     borderRadius: 20,
   },
