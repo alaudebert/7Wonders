@@ -79,12 +79,11 @@ const Wonders = (props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{cityName}</Text>
       {Object.keys(wonderBuilds).map((buildNum) => (
         <View style={styles.buildContainer} key={buildNum}>
           <Text style={styles.buildEtape}>
-            Etape {buildNum}:{" "}
-            {wonderBuilds[buildNum] ? "Construite" : "A construire"}
+            <Text style={{fontWeight:'bold', fontSize:18}}>Etape {buildNum}:{" "}</Text>
+            {wonderBuilds[buildNum] ? "  Construite" : "  A construire"}
           </Text>
           <View style={styles.etapeContainer}>
             <View key={buildNum} style={styles.etape}>
@@ -136,12 +135,6 @@ const styles = StyleSheet.create({
 paddingBottom:20,
 paddingLeft:20,
     marginBottom:10,
-  },
-  title: {
-    paddingTop: 40,
-    paddingBottom: 40,
-    textAlign: "center",
-    fontSize: 18,
   },
   resourceContainer: {
     flex: 1,

@@ -16,7 +16,7 @@ const Game = (props) => {
   const [name, setName] = useState("");
   const [numberOfPlayers, setNumberOfPlayers] = useState("4");
   const goTo = () => {
-    props.navigation.push("Game", { PlayerNumber: numberOfPlayers });
+    props.navigation.push("Game", { PlayerNumber: numberOfPlayers, Name:name});
   };
 
   function createData() {

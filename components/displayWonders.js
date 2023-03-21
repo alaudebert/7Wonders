@@ -40,7 +40,7 @@ const RandomWonder = ({ onWonderChange, onResourceChange }) => {
       onValue(cityResourceRef, (snapshot) => {
         const CityResource = snapshot.val();
         setResource(CityResource.Resource);
-      handleResourceChange(CityResource.Resource);
+        handleResourceChange(CityResource.Resource);
       });
     }
     handleWonderChange();
@@ -75,12 +75,16 @@ const RandomWonder = ({ onWonderChange, onResourceChange }) => {
             </View>
           )}
         </TouchableOpacity>
-        {loadingCity ? (
-          <Text>Chargement de la merveille...</Text>
-        ) : (
-          <Wonders cityId={randomWonder} city={city} />
-        )}
+
+        {city && <Text style={styles.wonderName}>{city.Name}</Text>}
       </View>
+      {loadingCity ? (
+        <Text>Chargement de la merveille...</Text>
+      ) : (
+        <View>
+          <Wonders cityId={randomWonder} city={city} />
+        </View>
+      )}
     </View>
   );
 };
@@ -101,6 +105,11 @@ const styles = StyleSheet.create({
   wonders: {
     flex: 1,
     flexDirection: "row",
+  },
+  wonderName: {
+    padding: 30,
+    textAlign: "center",
+    fontSize: 18,
   },
   resource: {
     position: "relative",

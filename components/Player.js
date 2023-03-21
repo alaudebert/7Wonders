@@ -5,6 +5,7 @@ import {
   TextInput,
   Button,
   TouchableOpacity,
+  ImageBackground,
 } from "react-native";
 import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
@@ -12,7 +13,7 @@ import RandomWonder from "./displayWonders";
 import { db } from "./configuration";
 import { resource } from "./displayWonders";
 
-const Player = ({ route }) => {
+const Player = (props) => {
   const [username, setName] = useState("");
   const [curentDeck, setCurentDeck] = useState("");
   const [cointPoint, setCointPoint] = useState(0);
@@ -23,6 +24,8 @@ const Player = ({ route }) => {
   const [resourceName, setResourceName] = useState("");
   const [resource, setResource] = useState("");
   const [city, setCity] = useState("");
+  const gameName = props.game;
+  const turn = props.turn;
 
   const handleResourceChange = (resource) => {
     setResource(resource);
@@ -51,11 +54,21 @@ const Player = ({ route }) => {
       rightTrade: rightTrade,
     })
       .then(() => {
-        // Data saved successfully!
         alert("data updated!");
       })
       .catch((error) => {
-        // The write failed...
+        alert(error);
+      });
+
+    update(ref(db, "GamePlayer/" + gameName), {
+      [username]: {
+        Turn: turn,
+      },
+    })
+      .then(() => {
+        alert("data updated!");
+      })
+      .catch((error) => {
         alert(error);
       });
 
@@ -63,7 +76,6 @@ const Player = ({ route }) => {
       const resourcesRef = ref(db, "Resource/");
 
       onValue(resourcesRef, (snapshot) => {
-        // Utilisez la fonction forEach() pour itérer sur tous les champs du document
         snapshot.forEach((childSnapshot) => {
           const resourceName = childSnapshot.child("Name").val();
           if (resourceName == resource) {
@@ -133,11 +145,15 @@ const Player = ({ route }) => {
             style={styles.textBoxes}
           ></TextInput>
         </View>
-
-        <RandomWonder
-          onWonderChange={handleWonderChange}
-          onResourceChange={handleResourceChange}
-        />
+        {username ? (
+          <RandomWonder
+            onWonderChange={handleWonderChange}
+            onResourceChange={handleResourceChange}
+            player={username}
+          />
+        ) : (
+          <></>
+        )}
         <TouchableOpacity
           style={styles.button}
           onPress={verification}
@@ -153,6 +169,12 @@ const Player = ({ route }) => {
 export default Player;
 
 const styles = StyleSheet.create({
+  title: {
+    fontSize: 40,
+    padding: 20,
+    fontWeight: "bold",
+    color: "#107657",
+  },
   player: {
     flex: 1,
     alignItems: "center",
@@ -160,13 +182,15 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   textBoxes: {
+    textAlign: "center",
+    fontWeight: "bold",
     marginBottom: 20,
     marginTop: 20,
     width: "90%",
     fontSize: 18,
     padding: 12,
-    borderColor: "gray",
-    borderWidth: 0.5,
+    borderColor: "#c9aa79",
+    borderWidth: 1,
     borderRadius: 20,
   },
   card: {
@@ -178,8 +202,9 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    backgroundColor: "#107657",
+    backgroundColor: "#c9aa79",
     borderRadius: 20,
+    padding: 8,
   },
   textButton: {
     fontSize: 18,
