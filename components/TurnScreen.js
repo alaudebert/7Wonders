@@ -2,7 +2,6 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   TouchableOpacity,
   ImageBackground,
 } from "react-native";
@@ -11,6 +10,7 @@ import { ref, get, update, onValue, remove } from "firebase/database";
 import { db } from "./configuration";
 import PlayerInformations from "./PlayerInformations";
 import PlayersCards from "./PlayerCards";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Permet d'afficher l'état du jeu actuel
@@ -120,42 +120,59 @@ const Turn = (props) => {
     fetchData();
   }, []);
 
+  const onUpdateDeck = (deck) => {
+    setPlayersCards((prevCards) =>
+      prevCards.map((playerCards, index) => {
+        if (index === currentTurn) {
+          return deck;
+        }
+        return playerCards;
+      })
+    );
+  };
+
   // Affiche "Loading..." si les données ne sont pas encore disponibles
   return (
     <ImageBackground
       source={require("../assets/agora.jpeg")}
       style={styles.background}
     >
-      <View style={styles.container}>
-        {playersCards.length > 0 ? (
-          <View style={styles.flatListContainer}>
-            <PlayerInformations
-              player={playersTurn[currentTurn + 1]}
-              turn={currentTurn + 1}
-            />
-            <PlayersCards deck={playersCards[currentTurn]} />
-            {currentTurn + 1 !== players ? (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={nextPlayerTurn}
-                title="next Player"
-              >
-                <Text>Joueur suivant</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.button}
-                onPress={arrayRotation}
-                title="Next turn"
-              >
-                <Text>Tour suivant</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          <Text>Loading...</Text>
-        )}
-      </View>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.container}>
+          {playersCards.length > 0 ? (
+            <View style={styles.flatListContainer}>
+              <PlayerInformations
+                player={playersTurn[currentTurn + 1]}
+                turn={currentTurn + 1}
+              />
+              <PlayersCards
+                deck={playersCards[currentTurn]}
+                player={playersTurn[currentTurn + 1]}
+                onUpdateDeck={onUpdateDeck}
+              />
+              {currentTurn + 1 !== players ? (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={nextPlayerTurn}
+                  title="next Player"
+                >
+                  <Text>Joueur suivant</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={arrayRotation}
+                  title="Next turn"
+                >
+                  <Text>Tour suivant</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <Text>Loading...</Text>
+          )}
+        </View>
+      </SafeAreaView>
     </ImageBackground>
   );
 };

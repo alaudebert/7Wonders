@@ -13,17 +13,88 @@ import { db } from "./configuration";
 import { globalColor } from "./Global";
 import { resourceImage } from "./Global";
 
-const PlayerCards = (props) => {
-  const deck = props.deck;
+const PlayerCards = ({ player, deck, onUpdateDeck }) => {
   const [cardColors, setCardColors] = useState({});
   const [cardResourcesCost, setCardResourcesCost] = useState({});
   const [cardResourcesSave, setCardResourcesSave] = useState({});
+  const [resourceSave, setResourceSave] = useState(0);
+  const [resourceCost, setResourceCost] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  useEffect(() => {
+    const updateResourceCost = async (listCostResources) => {
+      for (const newResourceCost of listCostResources) {
+        const resourcesRef = ref(
+          db,
+          `PlayerResource/${player}/${newResourceCost[0]}`
+        );
+        const snapshot = await get(resourcesRef);
+        const resourceVal = snapshot.val();
+        setResourceCost(resourceVal.quantity);
+        console.log(resourceVal.quantity);
+        if (newResourceCost[1].Quantity > resourceCost) {
+          setErrorMessage(
+            "Vous n'avez pas assez de " +
+              newResourceCost[0] +
+              " pour acheter cette carte"
+          );
+          return;
+        }
+      }
+    };
+
+    updateResourceCost(cardResourcesCost);
+  }, [cardResourcesCost, player]);
+
+  const addCardToPlayer = async (listCostResources, listSaveResources, item) => {
+    if (errorMessage) {
+      return;
+    }
+
+    for (const newResourceCost of listCostResources) {
+      const resourcesRef = ref(
+        db,
+        `PlayerResource/${player}/${newResourceCost[0]}`
+      );
+      const snapshot = await get(resourcesRef);
+      const resourceVal = snapshot.val();
+      update(ref(db, `PlayerResource/${player}/${newResourceCost[0]}`), {
+        quantity: resourceVal.quantity - newResourceCost[1].Quantity,
+      })
+        .then(() => {
+          console.log(`${newResourceCost[0]} saved successfully!`);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    for (const newResourceSave of listSaveResources) {
+      const resourcesRef = ref(
+        db,
+        `PlayerResource/${player}/${newResourceSave[0]}`
+      );
+      const snapshot = await get(resourcesRef);
+      const resourceVal = snapshot.val();
+      update(ref(db, `PlayerResource/${player}/${newResourceSave[0]}`), {
+        quantity: resourceVal.quantity + newResourceSave[1].Quantity,
+      })
+        .then(() => {
+          console.log(`${newResourceSave[0]} saved successfully!`);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+
+    onUpdateDeck(deck.filter((card) => card !== item));
+  };
+
 
   useEffect(() => {
     const cardColorsRef = {};
     const cardResourcesCostRef = {};
     const cardResourcesSaveRef = {};
-
     deck.forEach((card) => {
       const cardRef = ref(db, "Card/Age 1/" + card + "/");
       onValue(cardRef, (snapshot) => {
@@ -95,7 +166,13 @@ const PlayerCards = (props) => {
             ))}
           </View>
         </View>
-        <TouchableOpacity style={styles.button} title="Built">
+        <TouchableOpacity
+          style={styles.button}
+          title="Built"
+          onPress={() =>
+            addCardToPlayer(cardResourceCostList, cardResourceSaveList, item)
+          }
+        >
           <Text style={styles.textButton}>Choisir</Text>
         </TouchableOpacity>
       </View>
@@ -103,14 +180,21 @@ const PlayerCards = (props) => {
   };
 
   return (
-    <ScrollView horizontal={true}>
-      <FlatList
-        data={Object.keys(cardColors)}
-        renderItem={renderItem}
-        keyExtractor={(item) => item}
-        contentContainerStyle={styles.list}
-      />
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      {errorMessage !== null ? (
+        <Text style={styles.error}>{errorMessage}</Text>
+      ) : (
+        <></>
+      )}
+      <ScrollView horizontal={true}>
+        <FlatList
+          data={Object.keys(cardColors)}
+          renderItem={renderItem}
+          keyExtractor={(item) => item}
+          contentContainerStyle={styles.list}
+        />
+      </ScrollView>
+    </View>
   );
 };
 
@@ -146,7 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 4,
     margin: 2,
-    backgroundColor:"#D79F8E",
+    backgroundColor: "#D79F8E",
   },
   button: {
     width: "100%",
@@ -164,6 +248,15 @@ const styles = StyleSheet.create({
   resourceImage: {
     width: 40,
     height: 40,
+    borderRadius: 10,
+  },
+  error: {
+    textAlign: "center",
+    backgroundColor: "red",
+    color: "white",
+    padding: 10,
+    fontSize: 16,
+    fontWeight: "bold",
     borderRadius: 10,
   },
 });
