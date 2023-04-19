@@ -3,9 +3,7 @@ import {
   Text,
   View,
   TextInput,
-  Button,
   TouchableOpacity,
-  ImageBackground,
 } from "react-native";
 import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
@@ -19,14 +17,9 @@ import { db } from "./configuration";
  * @returns Player contient le composant displayWonders
  */
 const Player = (props) => {
+  const { onTurnChange } = props;
   const [username, setName] = useState("");
-  const [curentDeck, setCurentDeck] = useState("");
-  const [cointPoint, setCointPoint] = useState(0);
-  const [culturePoint, setCulturePoint] = useState(0);
-  const [armyPoint, setArmyPoint] = useState(0);
-  const [leftTrade, setLeftTrade] = useState(false);
-  const [rightTrade, setRightTrade] = useState(false);
-  const [resourceName, setResourceName] = useState("");
+  const [usernameBdd, setUsernameBdd] = useState("");
   const [resource, setResource] = useState("");
   const [city, setCity] = useState("");
   const gameName = props.game;
@@ -48,15 +41,18 @@ const Player = (props) => {
    */
   const handleWonderChange = (city) => {
     setCity(city);
-    set(ref(db, `PlayerWonder/${username}/`), {
-      Wonder: city,
-    })
-      .then(() => {
-        console.log(`${city} saved successfully!`);
+    if (city) {
+      update(ref(db, `PlayerWonder/${username}/`), {
+        Wonder: city,
       })
-      .catch((error) => {
-        console.error(error);
-      });
+        .then(() => {
+          console.log(`${city} saved successfully!`);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      setUsernameBdd(username);
+    }
   };
 
   /**
@@ -69,12 +65,6 @@ const Player = (props) => {
 
     //Création du joueur
     set(ref(db, "users/" + username), {
-      username: username,
-      cointPoint: cointPoint,
-      culturePoint: culturePoint,
-      armyPoint: armyPoint,
-      leftTrade: leftTrade,
-      rightTrade: rightTrade,
     }).catch((error) => {
       alert(error);
     });
@@ -119,15 +109,13 @@ const Player = (props) => {
     savePlayerResources(username);
   }
 
-  function updateData() {
-    // const newKey = push(child(ref(database), 'users')).key;
-
-    update(ref(db, "users/" + username), {
-      username: username,
-    }).catch((error) => {
-      // The write failed...
-      alert(error);
-    });
+  function updateUsernameData() {
+    remove(ref(db, "PlayerWonder/" + usernameBdd));
+    const playerWonderRef = ref(db, "PlayerWonder/");
+    const newData = {
+      [`${username}/Wonder`]: city,
+    };
+    update(playerWonderRef, newData);
   }
 
   /**
@@ -142,7 +130,11 @@ const Player = (props) => {
     } else if (!city) {
       alert("Veuillez cliquer sur le bouton + pour voir votre merveille");
     } else {
+      if (username != usernameBdd) {
+        updateUsernameData();
+      }
       createData();
+      onTurnChange(turn);
     }
   };
 
@@ -238,6 +230,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#c9aa79",
     borderRadius: 20,
     padding: 8,
+    margin: 8,
   },
   textButton: {
     fontSize: 18,

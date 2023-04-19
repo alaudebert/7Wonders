@@ -5,12 +5,13 @@ import {
   Text,
   ImageBackground,
 } from "react-native";
+import { useState } from "react";
 import { ref, update } from "firebase/database";
 import { db } from "./configuration";
-import Player from "./Player";
+import Player from "./AddPlayer";
 
 /** Game
- *  permet aux utilisateurs d'entrer leur nom et assigne une merveille à chaque utilisateur
+ * Permet aux utilisateurs d'entrer leur nom et assigne une merveille à chaque utilisateur
  *
  * Game fait appel au composant Player
  *
@@ -24,6 +25,8 @@ const Game = ({ route }) => {
   const gameName = route.params.Name;
   /** Le tableau de joueurs */
   const players = [];
+  /** Nombre de joueurs*/
+  const [turn, setTurn] = useState("");
 
   /**
    * createGame ajoute le nombre de joueurs dans la base de donnée
@@ -35,13 +38,21 @@ const Game = ({ route }) => {
       }).catch((error) => {
         alert(error);
       });
+      if(turn < numberOfPlayers){
+        alert("Valider le nom de chaque joueur avant de passer à la suite !");
+      }
     }
+  };
+
+  const handleTurnChange = (turn) => {
+    setTurn(turn);
   };
 
   // Boucle permettant d'afficher autant de composant Player que de joueurs dans la partie
   for (let i = 1; i <= numberOfPlayers; i++) {
     players.push({ key: i.toString() });
   }
+
 
   return (
     <ImageBackground
@@ -51,10 +62,9 @@ const Game = ({ route }) => {
       <Text style={styles.title}> Joueurs</Text>
       <FlatList
         data={players}
-        renderItem=
-        /** Donne l'ordre de jeu du joueur et le nom de la partie en paramètre du composant player */
-        {({ item }) => <Player turn={item.key} game={gameName} /> 
-        }
+        renderItem=/** Donne l'ordre de jeu du joueur et le nom de la partie en paramètre du composant player */
+        {({ item }) => <Player turn={item.key} game={gameName} onTurnChange={handleTurnChange}
+        />}
       />
       <TouchableOpacity
         style={styles.button}

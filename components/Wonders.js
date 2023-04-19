@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, Image } from "react-native";
 import { useState, useEffect } from "react";
 import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
-import { wonderImage } from "./Global";
+import { resourceImage } from "./Global";
 
 /**
  * Permet d'afficher les informations d'une merveille donnée en paramètre
@@ -118,7 +118,7 @@ const Wonders = (props) => {
                        * variables globales contenant les chemins des images
                        **/}
                       <Image
-                        source={wonderImage[resource]}
+                        source={resourceImage[resource]}
                         style={styles.resourceImage}
                       />
 
@@ -132,7 +132,7 @@ const Wonders = (props) => {
                   wonderSaveResources[buildNum].map((resource, index) => (
                     <View key={index}>
                       <Image
-                        source={wonderImage[resource]}
+                        source={resourceImage[resource]}
                         style={styles.resourceImage}
                       />
                       <Text> x {wonderSaveQuantities[buildNum][index]}</Text>

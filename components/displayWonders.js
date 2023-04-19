@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
 import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import Wonders from "./Wonders";
-import { wonderImage } from "./Global";
+import { wonderImage, resourceImage } from "./Global";
 import { cities } from "./Global.js";
 
 /**
@@ -92,7 +92,7 @@ const RandomWonder = ({ onWonderChange, onResourceChange}) => {
           ) : (
             <View>
               <Image source={wonderImage[randomWonder]} style={styles.image} />
-              <Image source={wonderImage[resource]} style={styles.resource} />
+              <Image source={resourceImage[resource]} style={styles.resource} />
             </View>
           )}
         </TouchableOpacity>

@@ -12,23 +12,22 @@ import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
 import { db } from "./configuration";
 
-/** Page d'accueil de l'application 
- * 
- * Fonctionnalitées : 
+/** Page d'accueil de l'application
+ *
+ * Fonctionnalitées :
  *  - Créer une partie avec son nom de partie et son nombre de joueur
- * 
- * Navigation : 
+ *
+ * Navigation :
  *  - Renvoie à la page Game.js
  */
-const Game = (props) => {
-
+const Home = (props) => {
   /** @constante @type {string} Enregistre le nom de la partie  */
   const [name, setName] = useState("");
 
   /** @constante @type {number} Enregistre le nombre de joueurs (minimum 4)*/
   const [numberOfPlayers, setNumberOfPlayers] = useState(4);
 
-  /** Gestion de la navigation 
+  /** Gestion de la navigation
    * @returns Donne le nom de la partie et le nombre de joueur en paramètre de la navigation
    */
   const goTo = () => {
@@ -45,6 +44,7 @@ const Game = (props) => {
   function createData() {
     set(ref(db, "Game/" + name), {
       name: name,
+      players: numberOfPlayers,
     })
       .then(() => {
         // Data saved successfully!
@@ -73,7 +73,6 @@ const Game = (props) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        
         <Image source={require(`../assets/titre.png`)} style={styles.image} />
 
         <TextInput
@@ -106,14 +105,12 @@ const Game = (props) => {
         >
           <Text style={styles.buttonText}>Jouer</Text>
         </TouchableOpacity>
-
       </View>
-
     </ImageBackground>
   );
 };
 
-export default Game;
+export default Home;
 
 const styles = StyleSheet.create({
   container: {
