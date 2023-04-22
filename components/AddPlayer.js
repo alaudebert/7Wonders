@@ -64,8 +64,7 @@ const Player = (props) => {
     setDisabled(true);
 
     //Création du joueur
-    set(ref(db, "users/" + username), {
-    }).catch((error) => {
+    set(ref(db, "users/" + username), {}).catch((error) => {
       alert(error);
     });
 

@@ -18,11 +18,11 @@ import Player from "./AddPlayer";
  * @param {*} param0
  * @returns
  */
-const Game = ({ route }) => {
+const Game = (props) => {
   /** Le nombre de joueur dans la partie */
-  const numberOfPlayers = route.params.PlayerNumber;
+  const numberOfPlayers = props.route.params.PlayerNumber;
   /** Le nom de la partie */
-  const gameName = route.params.Name;
+  const gameName = props.route.params.Name;
   /** Le tableau de joueurs */
   const players = [];
   /** Nombre de joueurs*/
@@ -33,6 +33,7 @@ const Game = ({ route }) => {
    */
   const createGame = () => {
     if (gameName) {
+      console.log("ici");
       update(ref(db, "Game/" + gameName), {
         PlayerNumber: numberOfPlayers,
       }).catch((error) => {
@@ -42,6 +43,10 @@ const Game = ({ route }) => {
         alert("Valider le nom de chaque joueur avant de passer à la suite !");
       }
     }
+    props.navigation.push("Turn", {
+      players: numberOfPlayers,
+      game: gameName,
+    });
   };
 
   const handleTurnChange = (turn) => {

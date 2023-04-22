@@ -23,4 +23,7 @@ export let resourceImage = {
 
 export let globalColor = {
   Brown : "#855800",
+  Blue: "#23A8FE",
+  Grey: "#939BA0",
+  Yellow: "#F3BD2C",
 }

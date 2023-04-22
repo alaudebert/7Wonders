@@ -4,6 +4,8 @@ import {
   View,
   TouchableOpacity,
   ImageBackground,
+  ScrollView,
+  Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { ref, get, update, onValue, remove } from "firebase/database";
@@ -11,16 +13,23 @@ import { db } from "./configuration";
 import PlayerInformations from "./PlayerInformations";
 import PlayersCards from "./PlayerCards";
 import { SafeAreaView } from "react-native-safe-area-context";
+import WonderStep from "./WonderStep";
 
 /**
  * Permet d'afficher l'état du jeu actuel
  * @param {*} props contient le nom de la partie et l'ordre de jeu du joueur
  */
 const Turn = (props) => {
+  const [showDialog, setShowDialog] = useState(false);
+
+  //const game = props.route.params.game;
+  //const players = props.route.params.players;
   const game = props.game;
   const players = props.players;
   const [currentTurn, setCurrentTurn] = useState(0);
   const [playersCards, setPlayersCards] = useState([]);
+  const [playerTurn, setPlayerTurn] = useState({});
+  const [isPlay, setIsPlay] = useState(false);
 
   const cards = async () => {
     const cardRef = ref(db, "Card/Age 1");
@@ -61,7 +70,7 @@ const Turn = (props) => {
 
   //Fait tourner d'un cran le paquet de cartes
   const arrayRotation = () => {
-    array = playersCards;
+    const array = playersCards;
     const end = array[array.length - 1];
     for (let i = array.length - 1; i > 0; i--) {
       array[i] = array[i - 1];
@@ -69,20 +78,22 @@ const Turn = (props) => {
     array[0] = end;
     setCurrentTurn(0);
     setPlayersCards(array);
+    setIsPlay(false);
   };
 
   //Fait passer au joueur suivant
   const nextPlayerTurn = () => {
     let newCurrentTurn = currentTurn + 1;
     setCurrentTurn(newCurrentTurn);
+    setIsPlay(false);
   };
 
   // Renvoie un tableau contenant le tour du joueur et son nom
   const collectPlayers = () => {
-    const playerGameRef = ref(db, "GamePlayer/" + game + "/");
-    const [playerTurn, setPlayerTurn] = useState({});
+    const [playerTurn, setPlayerTurn] = useState([]);
 
     useEffect(() => {
+      const playerGameRef = ref(db, "GamePlayer/" + game + "/");
       const unsubscribe = onValue(playerGameRef, (snapshot) => {
         const players = snapshot.val();
         let playerTurnObj = [];
@@ -102,7 +113,7 @@ const Turn = (props) => {
       });
 
       return () => unsubscribe();
-    }, [playerGameRef]);
+    }, [game]);
 
     return playerTurn;
   };
@@ -129,68 +140,141 @@ const Turn = (props) => {
         return playerCards;
       })
     );
+    onUpdatePlay();
+  };
+
+  const onUpdatePlay = () => {
+    setIsPlay(true);
   };
 
   // Affiche "Loading..." si les données ne sont pas encore disponibles
+  console.log("Player : " + playersTurn[currentTurn + 1]);
   return (
     <ImageBackground
       source={require("../assets/agora.jpeg")}
       style={styles.background}
     >
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.container}>
+      <View style={styles.container}>
+        <SafeAreaView>
           {playersCards.length > 0 ? (
             <View style={styles.flatListContainer}>
-              <PlayerInformations
-                player={playersTurn[currentTurn + 1]}
-                turn={currentTurn + 1}
-              />
+              <PlayerInformations player={playersTurn[currentTurn + 1]} />
               <PlayersCards
                 deck={playersCards[currentTurn]}
                 player={playersTurn[currentTurn + 1]}
                 onUpdateDeck={onUpdateDeck}
+                isPlay={isPlay}
               />
-              {currentTurn + 1 !== players ? (
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={nextPlayerTurn}
-                  title="next Player"
-                >
-                  <Text>Joueur suivant</Text>
-                </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                title="Next turn"
+                onPress={() => setShowDialog(true)}
+              >
+                <Text style={styles.textButton}>Voir la merveille</Text>
+              </TouchableOpacity>
+              {isPlay ? (
+                <>
+                  {currentTurn + 1 !== players ? (
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={nextPlayerTurn}
+                      title="next Player"
+                    >
+                      <Text style={styles.textButton}>Joueur suivant</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={arrayRotation}
+                      title="Next turn"
+                    >
+                      <Text style={styles.textButton}>Tour suivant</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
               ) : (
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={arrayRotation}
-                  title="Next turn"
-                >
-                  <Text>Tour suivant</Text>
-                </TouchableOpacity>
+                <></>
               )}
             </View>
           ) : (
             <Text>Loading...</Text>
           )}
+        </SafeAreaView>
+      </View>
+      <Modal visible={showDialog}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>
+              Etapes de construction de la merveille
+            </Text>
+            <WonderStep
+              player={playersTurn[currentTurn + 1]}
+              onUpdatePlay={onUpdatePlay}
+              isPlay={isPlay}
+            />
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { width: 330, backgroundColor: "#C70039" },
+              ]}
+              onPress={() => setShowDialog(false)}
+            >
+              <Text style={styles.textButton}>Fermer la boîte de dialogue</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </SafeAreaView>
+      </Modal>
     </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "space-around",
+  },
+  modalView: {
+    width: 350,
+    height: 700,
+    padding: 10,
+    borderRadius: 20,
+  },
+  modalTitle: {
+    padding: 10,
+    borderRadius: 20,
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "white",
+    backgroundColor: "#c9aa79",
+  },
   background: {
     flex: 1,
     resizeMode: "cover", // Pour couvrir tout l'écran
   },
   container: {
-    padding: 10,
+    padding: 2,
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
   flatListContainer: {
     alignItems: "center",
-    marginTop: 50,
+  },
+  button: {
+    width: "50%",
+    backgroundColor: "#c9aa79",
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 2,
+    margin: 2,
+  },
+  textButton: {
+    fontSize: 18,
+    color: "white",
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
 

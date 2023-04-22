@@ -4,7 +4,7 @@ import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import { resourceImage } from "./Global";
 
-const PlayerInformation = ({ player, turn }) => {
+const PlayerInformation = ({ player }) => {
   const [resources, setResources] = useState([]);
 
   //On récupère dans resources le nom de chaque ressource associée à sa quantité
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     color: "#000",
     backgroundColor:'#c9aa79',
     borderRadius: 20,
-    padding:10,
+    padding:5,
   },
   image: {
     width: 40,
@@ -99,10 +99,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
     width: "90%",
-    padding: 24,
+    padding: 10,
     borderRadius: 20,
     elevation: 5,
-    margin: 20,
+    margin: 5,
   },
   column: {
     flex: 1,
