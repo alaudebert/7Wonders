@@ -10,7 +10,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { useState } from "react";
 import { ref, set, update, onValue, remove } from "firebase/database";
-import { db } from "./configuration";
+import { db } from "../components/configuration";
 
 /** Page d'accueil de l'application
  *

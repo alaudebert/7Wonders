@@ -34,7 +34,7 @@ const PlayerCards = ({ player, deck, onUpdateDeck, isPlay }) => {
           .catch((error) => {
             console.error(error);
           });
-        onUpdateDeck(deck, item);
+        onUpdateDeck(deck.filter((card) => card !== item));
       })
       .catch((error) => {
         console.error(error);

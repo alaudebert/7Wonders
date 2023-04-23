@@ -7,8 +7,8 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { ref, update } from "firebase/database";
-import { db } from "./configuration";
-import Player from "./AddPlayer";
+import { db } from "../components/configuration";
+import Player from "../components/AddPlayer";
 
 /** Game
  * Permet aux utilisateurs d'entrer leur nom et assigne une merveille à chaque utilisateur
@@ -33,13 +33,12 @@ const Game = (props) => {
    */
   const createGame = () => {
     if (gameName) {
-      console.log("ici");
       update(ref(db, "Game/" + gameName), {
         PlayerNumber: numberOfPlayers,
       }).catch((error) => {
         alert(error);
       });
-      if(turn < numberOfPlayers){
+      if (turn < numberOfPlayers) {
         alert("Valider le nom de chaque joueur avant de passer à la suite !");
       }
     }
@@ -58,7 +57,6 @@ const Game = (props) => {
     players.push({ key: i.toString() });
   }
 
-
   return (
     <ImageBackground
       source={require("../assets/agora.jpeg")}
@@ -67,9 +65,15 @@ const Game = (props) => {
       <Text style={styles.title}> Joueurs</Text>
       <FlatList
         data={players}
-        renderItem=/** Donne l'ordre de jeu du joueur et le nom de la partie en paramètre du composant player */
-        {({ item }) => <Player turn={item.key} game={gameName} onTurnChange={handleTurnChange}
-        />}
+        renderItem /** Donne l'ordre de jeu du joueur et le nom de la partie en paramètre du composant player */={({
+          item,
+        }) => (
+          <Player
+            turn={item.key}
+            game={gameName}
+            onTurnChange={handleTurnChange}
+          />
+        )}
       />
       <TouchableOpacity
         style={styles.button}

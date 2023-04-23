@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,28 +10,21 @@ import {
   get,
   update,
   ref,
-  query,
-  orderByChild,
-  equalTo,
   onValue,
 } from "firebase/database";
 import { db } from "./configuration";
-import { globalColor } from "./Global";
-import { resourceImage } from "./Global";
 import Wonders from "./Wonders";
-import PlayerInformations from "./PlayerInformations";
 
-const WonderStep = ({ player, onUpdatePlay }) => {
+const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
   const [wonderId, setWonderId] = useState("");
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [firstIncompleteStep, setFirstIncompleteStep] = useState(null);
+  const [firstIncompleteStep, setFirstIncompleteStep] = useState("");
   const [wonderCost, setWonderCost] = useState({});
   const [wonderSave, setWonderSave] = useState({});
   const [error, setError] = useState("");
 
-  // On récupère l'id merveille du joueur
-  useEffect(() => {
+  const getPlayerWonder = useCallback(() => {
     const playerWonderRef = ref(db, `PlayerWonder/${player}`);
 
     onValue(playerWonderRef, (snapshot) => {
@@ -40,8 +33,7 @@ const WonderStep = ({ player, onUpdatePlay }) => {
     });
   }, [player]);
 
-  // On récupère le nom de la merveille
-  useEffect(() => {
+  const getCityName = useCallback(() => {
     const cityRef = ref(db, `City/${wonderId}`);
 
     onValue(cityRef, (snapshot) => {
@@ -51,8 +43,7 @@ const WonderStep = ({ player, onUpdatePlay }) => {
     });
   }, [wonderId]);
 
-  //On récupère l'étape de merveille à construire
-  useEffect(() => {
+  const getIncompleteStep = useCallback(() => {
     const wonderBuilds = ref(db, `Wonders/${wonderId}/`);
     onValue(wonderBuilds, (snapshot) => {
       const resourceValCost = snapshot.val();
@@ -65,8 +56,7 @@ const WonderStep = ({ player, onUpdatePlay }) => {
     });
   }, [wonderId]);
 
-  //Récupération des tableaux de resources
-  useEffect(() => {
+  const getResourcesCostAndSave = useCallback(() => {
     const wonderResourcesCostRef = ref(
       db,
       `WonderResourceCost/${wonderId}/${firstIncompleteStep}/`
@@ -84,12 +74,38 @@ const WonderStep = ({ player, onUpdatePlay }) => {
       const resourceValSave = snapshotSave.val();
       setWonderSave(resourceValSave);
     });
-  }, [firstIncompleteStep]);
+  }, [wonderId, firstIncompleteStep]);
+
+  useEffect(() => {
+    getPlayerWonder();
+  }, [getPlayerWonder]);
+
+  useEffect(() => {
+    if (wonderId) {
+      getCityName();
+    }
+  }, [getCityName, wonderId]);
+
+  useEffect(() => {
+    if (wonderId) {
+      getIncompleteStep();
+    }
+  }, [getIncompleteStep, wonderId]);
+
+  useEffect(() => {
+    if (firstIncompleteStep) {
+      getResourcesCostAndSave();
+    }
+  }, [getResourcesCostAndSave, firstIncompleteStep]);
 
   const built = async (listCostResources, listSaveResources) => {
     try {
       for (const cost in listCostResources) {
-        const resourcesRef = ref(db, `PlayerResource/${player}/${cost}`);
+        const resourcesRef = ref(
+          db,
+          `PlayerResource
+/${player}/${cost}`
+        );
         const snapshot = await get(resourcesRef);
         const resourceVal = snapshot.val();
         if (resourceVal.quantity >= listCostResources[cost].Quantity) {
@@ -108,7 +124,6 @@ const WonderStep = ({ player, onUpdatePlay }) => {
       }
 
       for (const newResourceSave in listSaveResources) {
-        console.log(listSaveResources);
         const resourcesRef = ref(
           db,
           `PlayerResource/${player}/${newResourceSave}`
@@ -139,7 +154,7 @@ const WonderStep = ({ player, onUpdatePlay }) => {
     <View
       style={{
         width: 350,
-        height: 530,
+        height: 550,
         padding: 10,
         borderRadius: 20,
       }}
@@ -148,7 +163,8 @@ const WonderStep = ({ player, onUpdatePlay }) => {
       <Wonders cityId={wonderId} city={city} />
       {error !== "" ? (
         <Text style={styles.error}>{error}</Text>
-      ) : firstIncompleteStep != null ? (
+      ) : firstIncompleteStep != "" ? (
+        isPlay == false ? (
         <TouchableOpacity
           style={[styles.button, { width: 320 }]}
           onPress={() => {
@@ -156,7 +172,7 @@ const WonderStep = ({ player, onUpdatePlay }) => {
           }}
         >
           <Text style={styles.textButton}>Construire</Text>
-        </TouchableOpacity>
+        </TouchableOpacity>):(<></>)
       ) : (
         <Text style={styles.wonderBuild}>
           {" "}

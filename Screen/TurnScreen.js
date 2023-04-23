@@ -9,11 +9,11 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { ref, get, update, onValue, remove } from "firebase/database";
-import { db } from "./configuration";
-import PlayerInformations from "./PlayerInformations";
-import PlayersCards from "./PlayerCards";
+import { db } from "../components/configuration";
+import PlayerInformations from "../components/PlayerInformations";
+import PlayersCards from "../components/PlayerCards";
 import { SafeAreaView } from "react-native-safe-area-context";
-import WonderStep from "./WonderStep";
+import WonderStep from "../components/WonderStep";
 
 /**
  * Permet d'afficher l'état du jeu actuel
@@ -22,13 +22,13 @@ import WonderStep from "./WonderStep";
 const Turn = (props) => {
   const [showDialog, setShowDialog] = useState(false);
 
-  //const game = props.route.params.game;
-  //const players = props.route.params.players;
-  const game = props.game;
-  const players = props.players;
+  const game = props.route.params.game;
+  const playerNumber = props.route.params.players;
+  const [players, setPlayers] = useState([]);
+  //const game = props.game;
+  //const players = props.players;
   const [currentTurn, setCurrentTurn] = useState(0);
   const [playersCards, setPlayersCards] = useState([]);
-  const [playerTurn, setPlayerTurn] = useState({});
   const [isPlay, setIsPlay] = useState(false);
 
   const cards = async () => {
@@ -40,7 +40,7 @@ const Turn = (props) => {
       const prop = Object.keys(properties);
       const nbPlayers = Object.values(properties)[1];
       for (const nbPlayer of nbPlayers) {
-        if (nbPlayer <= players) {
+        if (nbPlayer <= playerNumber) {
           cards.push(cardName);
         }
       }
@@ -63,7 +63,7 @@ const Turn = (props) => {
     const arrays = Array.from({ length: n }, () => []);
 
     originalArray.forEach((i, index) => {
-      arrays[index % players].push(i);
+      arrays[index % playerNumber].push(i);
     });
     return arrays;
   };
@@ -71,6 +71,11 @@ const Turn = (props) => {
   //Fait tourner d'un cran le paquet de cartes
   const arrayRotation = () => {
     const array = playersCards;
+
+    if (playersCards.length == 4) {
+      props.navigation.push("End", { players: players });
+    }
+
     const end = array[array.length - 1];
     for (let i = array.length - 1; i > 0; i--) {
       array[i] = array[i - 1];
@@ -96,6 +101,7 @@ const Turn = (props) => {
       const playerGameRef = ref(db, "GamePlayer/" + game + "/");
       const unsubscribe = onValue(playerGameRef, (snapshot) => {
         const players = snapshot.val();
+        setPlayers(Object.keys(players));
         let playerTurnObj = [];
 
         for (const [playerNum, player] of Object.entries(players)) {
@@ -125,7 +131,7 @@ const Turn = (props) => {
     const fetchData = async () => {
       const cardsArray = await cards();
       const cardList = randomCard(cardsArray);
-      const newPlayersCards = distributeCards(cardList, players);
+      const newPlayersCards = distributeCards(cardList, playerNumber);
       setPlayersCards(newPlayersCards);
     };
     fetchData();
@@ -148,7 +154,6 @@ const Turn = (props) => {
   };
 
   // Affiche "Loading..." si les données ne sont pas encore disponibles
-  console.log("Player : " + playersTurn[currentTurn + 1]);
   return (
     <ImageBackground
       source={require("../assets/agora.jpeg")}
@@ -174,7 +179,7 @@ const Turn = (props) => {
               </TouchableOpacity>
               {isPlay ? (
                 <>
-                  {currentTurn + 1 !== players ? (
+                  {currentTurn + 1 !== playerNumber ? (
                     <TouchableOpacity
                       style={styles.button}
                       onPress={nextPlayerTurn}
@@ -215,7 +220,7 @@ const Turn = (props) => {
             <TouchableOpacity
               style={[
                 styles.button,
-                { width: 330, backgroundColor: "#C70039" },
+                { width: 324, backgroundColor: "#C70039" },
               ]}
               onPress={() => setShowDialog(false)}
             >
@@ -263,12 +268,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    width: "50%",
     backgroundColor: "#c9aa79",
     borderRadius: 10,
     padding: 10,
     marginTop: 2,
     margin: 2,
+    marginLeft: 10,
   },
   textButton: {
     fontSize: 18,
