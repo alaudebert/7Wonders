@@ -22,26 +22,19 @@ https://github.com/alaudebert/7Wonders.git
 cd seven-wonders
 ```
 
-5. Déplacez vous sur la branche master
-
-```
-git checkout master
-
-```
-
-6. Installez les dépendances de l'application en exécutant la commande suivante :
+5. Installez les dépendances de l'application en exécutant la commande suivante :
 
 ```
 npm install
 ```
 
-7. Lancez l'application en exécutant la commande suivante :
+6. Lancez l'application en exécutant la commande suivante :
 
 ```
 npm start
 ```
 
-8. Scannez le code QR avec l'application Expo sur votre téléphone portable ou ouvrez l'émulateur Expo sur votre ordinateur.
+7. Scannez le code QR avec l'application Expo sur votre téléphone portable ou ouvrez l'émulateur Expo sur votre ordinateur.
 
 ## Technologies utilisées
 
