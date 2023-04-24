@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { ref, onValue, update } from "firebase/database";
 import { db } from "../components/configuration";
 
+/**
+ * Permet d'afficher les points et les gagnants de la partie
+ * @param {*} props 
+ * @returns 
+ */
 const End = (props) => {
   const players = props.route.params.players;
   const [playerScores, setPlayerScores] = useState([]);

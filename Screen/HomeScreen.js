@@ -46,10 +46,6 @@ const Home = (props) => {
       name: name,
       players: numberOfPlayers,
     })
-      .then(() => {
-        // Data saved successfully!
-        alert("data updated!");
-      })
       .catch((error) => {
         // The write failed...
         alert(error);

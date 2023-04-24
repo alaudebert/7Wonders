@@ -6,16 +6,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import {
-  get,
-  update,
-  ref,
-  onValue,
-} from "firebase/database";
+import { get, update, ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import Wonders from "./Wonders";
 
-const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
+/**
+ * Permet d'afficher les informations de la merveille te de construire une étape
+ * @param {*} param0 
+ * @returns 
+ */
+const WonderStep = ({ player, onUpdateDeck, deck, isPlay }) => {
   const [wonderId, setWonderId] = useState("");
   const [city, setCity] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +23,9 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
   const [wonderCost, setWonderCost] = useState({});
   const [wonderSave, setWonderSave] = useState({});
   const [error, setError] = useState("");
+  let errorMessage = "";
 
+  /** Récupération de la merveille associée au joueur */
   const getPlayerWonder = useCallback(() => {
     const playerWonderRef = ref(db, `PlayerWonder/${player}`);
 
@@ -43,6 +45,7 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
     });
   }, [wonderId]);
 
+  /** Récupération de la première étape non construite */
   const getIncompleteStep = useCallback(() => {
     const wonderBuilds = ref(db, `Wonders/${wonderId}/`);
     onValue(wonderBuilds, (snapshot) => {
@@ -56,6 +59,7 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
     });
   }, [wonderId]);
 
+  /** Récupération des resources associées à l'étape de merveille à construire */
   const getResourcesCostAndSave = useCallback(() => {
     const wonderResourcesCostRef = ref(
       db,
@@ -98,14 +102,11 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
     }
   }, [getResourcesCostAndSave, firstIncompleteStep]);
 
+  /** Construction de l'étaoe de merveille */
   const built = async (listCostResources, listSaveResources) => {
     try {
       for (const cost in listCostResources) {
-        const resourcesRef = ref(
-          db,
-          `PlayerResource
-/${player}/${cost}`
-        );
+        const resourcesRef = ref(db, `PlayerResource/${player}/${cost}/`);
         const snapshot = await get(resourcesRef);
         const resourceVal = snapshot.val();
         if (resourceVal.quantity >= listCostResources[cost].Quantity) {
@@ -117,28 +118,32 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
           });
           console.log(`${cost} delete successfully!`);
         } else {
-          throw new Error(
-            "Vous n'avez pas assez de " + cost + " pour construire cette étape"
-          );
+          errorMessage =
+            "Vous n'avez pas assez de " + cost + " pour construire cette étape";
+          setError(errorMessage);
         }
       }
-
-      for (const newResourceSave in listSaveResources) {
-        const resourcesRef = ref(
-          db,
-          `PlayerResource/${player}/${newResourceSave}`
-        );
-        const snapshot = await get(resourcesRef);
-        const resourceVal = snapshot.val();
-        await update(ref(db, `PlayerResource/${player}/${newResourceSave}`), {
-          quantity:
-            resourceVal.quantity + listSaveResources[newResourceSave].Quantity,
-        });
-        console.log(`${newResourceSave} saved successfully!`);
-        onUpdatePlay();
+      if (errorMessage == "") {
+        for (const newResourceSave in listSaveResources) {
+          const resourcesRef = ref(
+            db,
+            `PlayerResource/${player}/${newResourceSave}`
+          );
+          const snapshot = await get(resourcesRef);
+          const resourceVal = snapshot.val();
+          await update(ref(db, `PlayerResource/${player}/${newResourceSave}`), {
+            quantity:
+              resourceVal.quantity +
+              listSaveResources[newResourceSave].Quantity,
+          });
+          console.log(`${newResourceSave} saved successfully!`);
+          onUpdateDeck(deck.slice(1));
+        }
       }
     } catch (error) {
-      setError(error.message);
+      setError(
+        "Vous n'avez pas assez de " + cost + " pour construire cette étape"
+      );
     }
   };
 
@@ -165,14 +170,17 @@ const WonderStep = ({ player, onUpdatePlay, isPlay}) => {
         <Text style={styles.error}>{error}</Text>
       ) : firstIncompleteStep != "" ? (
         isPlay == false ? (
-        <TouchableOpacity
-          style={[styles.button, { width: 320 }]}
-          onPress={() => {
-            built(wonderCost, wonderSave);
-          }}
-        >
-          <Text style={styles.textButton}>Construire</Text>
-        </TouchableOpacity>):(<></>)
+          <TouchableOpacity
+            style={[styles.button, { width: 320 }]}
+            onPress={() => {
+              built(wonderCost, wonderSave);
+            }}
+          >
+            <Text style={styles.textButton}>Construire</Text>
+          </TouchableOpacity>
+        ) : (
+          <></>
+        )
       ) : (
         <Text style={styles.wonderBuild}>
           {" "}

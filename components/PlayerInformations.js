@@ -4,6 +4,11 @@ import { ref, onValue } from "firebase/database";
 import { db } from "./configuration";
 import { resourceImage } from "./Global";
 
+/**
+ * Affiche toutes les ressources du joueur avec leur quantité
+ * @param {} player : le nom du joueur actuel 
+ * @returns 
+ */
 const PlayerInformation = ({ player }) => {
   const [resources, setResources] = useState([]);
 

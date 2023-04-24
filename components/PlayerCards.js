@@ -7,11 +7,20 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import { ref, get, update, onValue, remove } from "firebase/database";
+import { ref, get, update } from "firebase/database";
 import { db } from "./configuration";
 import { globalColor } from "./Global";
 import { resourceImage } from "./Global";
 
+/**
+ *
+ * @param {*}
+ * player donne le nom du joueur
+ * deck donne le tableau de cartes du joueurs
+ * onUpdateDeck est la fonction de callBack pour mettre à jour le tacareesbleau de cartes
+ *  isPlay renseigne si le joueur à déjà joué ou pas
+ * @returns PlayerCards permet d'afficher les cartes du joueurs et les actions choisir et vendre
+ */
 const PlayerCards = ({ player, deck, onUpdateDeck, isPlay }) => {
   const [cardColors, setCardColors] = useState({});
   const [cardResourcesCost, setCardResourcesCost] = useState({});
@@ -19,6 +28,10 @@ const PlayerCards = ({ player, deck, onUpdateDeck, isPlay }) => {
   const [error, setError] = useState("");
   let errorMessage = "";
 
+  /**
+   * Permet au joueur de vendre sa carte et de gagner 3 points de trésors
+   * @param {*} item
+   */
   const SaleCard = (item) => {
     setError("");
     const resourcesRef = ref(db, `PlayerResource/${player}/Treasure/`);
@@ -41,6 +54,13 @@ const PlayerCards = ({ player, deck, onUpdateDeck, isPlay }) => {
       });
   };
 
+  /**
+   * Permet au joueur de choisir une carte, de lui faire gagner les resources correspondantes
+   * au gain et perdre celles correspondantes au cout
+   * @param {} listCostResources : liste des resources à gagner
+   * @param {*} listSaveResources : liste des resources cout
+   * @param {*} item
+   */
   const addCardToPlayer = async (
     listCostResources,
     listSaveResources,
@@ -89,6 +109,9 @@ const PlayerCards = ({ player, deck, onUpdateDeck, isPlay }) => {
     }
   };
 
+  /**
+   * On récupère les tableaux de ressources (gain et cout)
+   */
   useEffect(() => {
     const cardColorsRef = {};
     const cardResourcesCostRef = {};

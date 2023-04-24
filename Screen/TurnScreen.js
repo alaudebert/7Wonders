@@ -214,7 +214,8 @@ const Turn = (props) => {
             </Text>
             <WonderStep
               player={playersTurn[currentTurn + 1]}
-              onUpdatePlay={onUpdatePlay}
+              deck={playersCards[currentTurn]}
+              onUpdateDeck={onUpdateDeck}
               isPlay={isPlay}
             />
             <TouchableOpacity
