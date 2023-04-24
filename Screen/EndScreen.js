@@ -1,5 +1,4 @@
 import { View, Text, ImageBackground, StyleSheet } from "react-native";
-import PlayerInformation from "../components/PlayerInformations";
 import { useEffect, useState } from "react";
 import { ref, onValue, update } from "firebase/database";
 import { db } from "../components/configuration";

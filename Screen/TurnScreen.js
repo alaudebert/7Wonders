@@ -4,11 +4,10 @@ import {
   View,
   TouchableOpacity,
   ImageBackground,
-  ScrollView,
   Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { ref, get, update, onValue, remove } from "firebase/database";
+import { ref, get, onValue } from "firebase/database";
 import { db } from "../components/configuration";
 import PlayerInformations from "../components/PlayerInformations";
 import PlayersCards from "../components/PlayerCards";
