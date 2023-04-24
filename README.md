@@ -1,5 +1,3 @@
-Bien sûr, voici un exemple de README pour votre application Seven Wonders :
-
 # Seven Wonders
 
 Seven Wonders est une application mobile développée avec Expo et React Native qui permet de découvrir les sept merveilles du monde antique.
