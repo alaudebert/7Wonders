@@ -16,8 +16,7 @@ npm install -g expo-cli
 3. Clonez ce dépôt de code à l'aide de la commande suivante :
 
 ```
-git clone https://github.com/votre-utilisateur/seven-wonders.git
-```
+https://github.com/alaudebert/7Wonders.git```
 
 4. Accédez au répertoire de l'application en exécutant la commande suivante :
 
@@ -46,6 +45,3 @@ npm start
 - React Navigation
 - Firebase
 
-## Contributeurs
-
-- Prénom Nom : [lien GitHub](https://github.com/nom-utilisateur)
