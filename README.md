@@ -6,8 +6,7 @@ Seven Wonders est une application mobile développée avec Expo et React Native 
 
 ## Installation
 
-1. Assurez-vous que Node.js est installé sur votre machine. Si ce n'est pas le cas, vous pouvez le télécharger et l'installer à partir du site officiel : https://nodejs.org/.
-2. Installez Expo en exécutant la commande suivante dans votre terminal :
+1. Installez Expo en exécutant la commande suivante dans votre terminal :
 
 ```
 npm install -g expo-cli
@@ -16,7 +15,8 @@ npm install -g expo-cli
 3. Clonez ce dépôt de code à l'aide de la commande suivante :
 
 ```
-https://github.com/alaudebert/7Wonders.git```
+https://github.com/alaudebert/7Wonders.git
+```
 
 4. Accédez au répertoire de l'application en exécutant la commande suivante :
 
@@ -24,19 +24,26 @@ https://github.com/alaudebert/7Wonders.git```
 cd seven-wonders
 ```
 
-5. Installez les dépendances de l'application en exécutant la commande suivante :
+5. Déplacez vous sur la branche master
+
+```
+git checkout master
+
+```
+
+6. Installez les dépendances de l'application en exécutant la commande suivante :
 
 ```
 npm install
 ```
 
-6. Lancez l'application en exécutant la commande suivante :
+7. Lancez l'application en exécutant la commande suivante :
 
 ```
 npm start
 ```
 
-7. Scannez le code QR avec l'application Expo sur votre téléphone portable ou ouvrez l'émulateur Expo sur votre ordinateur.
+8. Scannez le code QR avec l'application Expo sur votre téléphone portable ou ouvrez l'émulateur Expo sur votre ordinateur.
 
 ## Technologies utilisées
 
