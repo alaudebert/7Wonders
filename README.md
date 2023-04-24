@@ -25,7 +25,7 @@ cd seven-wonders
 5. Installez les dépendances de l'application en exécutant la commande suivante :
 
 ```
-npm install
+npm install --force
 ```
 
 6. Lancez l'application en exécutant la commande suivante :
